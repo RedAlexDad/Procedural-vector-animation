@@ -33,10 +33,10 @@
 	const canvas = document.getElementById("canvas");
 	const ctx = canvas.getContext("2d");
 
-	const SWidth = canvas.width; // Ширина сцены (canvas)
-	const SHeight = canvas.height; // Высота сцены
-	const PerspX = SWidth / 2; // Центр перспективы 0 в новой системе координат - в центре canvas
-	const PerspY = SHeight / 2; // Центр перспективы по Y опускаем вниз на 100 пикселей
+	const SWidth = 800; // Ширина сцены (canvas)
+	const SHeight = 600; // Высота сцены
+	const PerspX = 0; // Центр перспективы 0 в новой системе координат - в центре canvas
+	const PerspY = -100; // Центр перспективы по Y опускаем вниз на 100 пикселей
 	const PCenter = {
 		x: PerspX,
 		y: PerspY
@@ -54,82 +54,52 @@
 	const maxTopPerspTan = (SHeight / 2 - PerspY) / (SWidth / 2);
 
 	function drawPerspective() {
-		// Отрисовка перспективных линий
+		// Верхние линии перспективы
 		ctx.strokeStyle = "rgb(0, 150, 150)";
-		ctx.beginPath();
-		ctx.moveTo(0, SHeight);
+		ctx.beginPath(); // Start a new path
+		ctx.moveTo(-SWidth / 2, SHeight / 2);
 		ctx.lineTo(PerspX, PerspY);
-		ctx.lineTo(SWidth, SHeight);
-		ctx.stroke();
-		ctx.closePath();
+		ctx.lineTo(SWidth / 2, SHeight / 2);
+		ctx.stroke(); // Render the path
+		ctx.closePath()
 
+		// Нижние линии перспективы
 		ctx.strokeStyle = "rgb(0, 0, 0)";
-		ctx.beginPath();
-		ctx.moveTo(0, 0);
+		ctx.beginPath(); // Start a new path
+		ctx.moveTo(-SWidth / 2, -SHeight / 2);
 		ctx.lineTo(PerspX, PerspY);
-		ctx.lineTo(SWidth, 0);
-		ctx.stroke();
+		ctx.lineTo(SWidth / 2, -SHeight / 2);
+		ctx.stroke(); // Render the path
 		ctx.closePath();
 
+		// Линия горизонта
 		ctx.strokeStyle = "rgb(0, 250, 250)";
-		ctx.beginPath();
-		ctx.moveTo(0, PerspY);
-		ctx.lineTo(SWidth, PerspY);
-		ctx.stroke();
-		ctx.closePath();
+		ctx.moveTo(-SWidth / 2, PerspY);
+		ctx.lineTo(SWidth / 2, PerspY);
+		ctx.stroke(); // Render the path	
+		ctx.closePath()
 	}
 
 	function drawAxes() {
-		// Отрисовка осей
+		ctx.font = "12px serif";
 		ctx.strokeStyle = "red";
-		ctx.beginPath();
-		ctx.moveTo(0, PerspY);
-		ctx.lineTo(SWidth, PerspY);
-		ctx.stroke();
-		ctx.closePath();
+		ctx.beginPath(); // Start a new path
+		ctx.moveTo(0, 0);
+		ctx.lineTo(50, 0);
+		ctx.stroke(); // Render the path
+		ctx.closePath()
+		ctx.fillText("X", 50, 10);
 
 		ctx.strokeStyle = "blue";
-		ctx.beginPath();
-		ctx.moveTo(PerspX, 0);
-		ctx.lineTo(PerspX, SHeight);
-		ctx.stroke();
-		ctx.closePath();
+		ctx.beginPath(); // Start a new path
+		ctx.moveTo(0, 0);
+		ctx.lineTo(0, 50);
+		ctx.stroke(); // Render the path
+		ctx.closePath()
+		ctx.fillText("Y", 0, 50);
 	}
 
 	drawAxes(); // Оси перед трансформацией
-
-	function drawRocket(x, y) {
-		ctx.fillStyle = "red";
-		ctx.beginPath();
-		ctx.moveTo(x, y);
-		ctx.lineTo(x - 25, y + 50);
-		ctx.lineTo(x + 25, y + 50);
-		ctx.closePath();
-		ctx.fill();
-
-		ctx.fillStyle = "blue";
-		ctx.fillRect(x - 25, y + 50, 50, 10);
-	}
-
-	let rocketX = PerspX;
-	let rocketY = PerspY;
-
-	function updateRocketPosition(event) {
-		rocketX = event.clientX - canvas.getBoundingClientRect().left - canvas.width / 2;
-		rocketY = event.clientY - canvas.getBoundingClientRect().top - canvas.height / 2;
-	}	
-
-	canvas.addEventListener("mousemove", updateRocketPosition);
-
-	function animateRocket() {
-		ctx.clearRect(0, 0, SWidth, SHeight);
-		drawPerspective();
-		drawRocket(rocketX, rocketY);
-		drawAxes();
-		requestAnimationFrame(animateRocket);
-	}
-
-	animateRocket();
 
 	//setTransform(a, b, c, d, e, f) - задать матрицу трансформаций для всех остальных рисований
 	//	a	c	e
@@ -329,6 +299,62 @@
 
 		}, 16);
 	}
+
+	// Управление мышкой
+	const square = {
+		x: canvas.width / 2,
+		y: canvas.height / 2,
+		size: 50,
+		isDragging: false,
+		offsetX: 0,
+		offsetY: 0
+	};
+
+	function drawSquare(x, y, size) {
+		ctx.fillStyle = "blue";
+		ctx.fillRect(x - size / 2, y - size / 2, size, size);
+	}
+
+	canvas.addEventListener("mousedown", (e) => {
+		const mouseX = e.clientX - canvas.getBoundingClientRect().left;
+		const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+
+		if (
+			mouseX >= square.x - square.size / 2 &&
+			mouseX <= square.x + square.size / 2 &&
+			mouseY >= square.y - square.size / 2 &&
+			mouseY <= square.y + square.size / 2
+		) {
+			square.isDragging = true;
+			square.offsetX = mouseX - square.x;
+			square.offsetY = mouseY - square.y;
+		}
+	});
+
+	canvas.addEventListener("mousemove", (e) => {
+		if (square.isDragging) {
+			const mouseX = e.clientX - canvas.getBoundingClientRect().left;
+			const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+
+			square.x = mouseX - square.offsetX;
+			square.y = mouseY - square.offsetY;
+
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			drawSquare(square.x, square.y, square.size);
+		}
+	});
+
+	canvas.addEventListener("mouseup", () => {
+		square.isDragging = false;
+	});
+
+	function animate() {
+		requestAnimationFrame(animate);
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		drawSquare(square.x, square.y, square.size);
+	}
+
+	animate();
 </script>
 
 </html>

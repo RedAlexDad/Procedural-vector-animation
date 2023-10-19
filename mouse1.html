@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>HTML5</title>
+    <style>
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        hgroup,
+        menu,
+        nav,
+        section {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="800" height="600" style="border: 2px solid red;"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    // Создадим простой квадратик для перетаскивания
+    const square = {
+        x: canvas.width / 2,
+        y: canvas.height / 2,
+        size: 50,
+        isDragging: false,
+        offsetX: 0,
+        offsetY: 0
+    };
+
+    // Нарисуем простой квадратик
+    function drawSquare(x, y, size) {
+        ctx.fillStyle = "blue";
+        ctx.fillRect(x - size / 2, y - size / 2, size, size);
+    }
+
+    // Создадим параметр для мышки
+    canvas.addEventListener("mousedown", (e) => {
+        const mouseX = e.clientX - canvas.getBoundingClientRect().left;
+        const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+
+        if (
+            mouseX >= square.x - square.size / 2 &&
+            mouseX <= square.x + square.size / 2 &&
+            mouseY >= square.y - square.size / 2 &&
+            mouseY <= square.y + square.size / 2
+        ) {
+            square.isDragging = true;
+            square.offsetX = mouseX - square.x;
+            square.offsetY = mouseY - square.y;
+        }
+    });
+
+    // Отрисовки мыши
+    canvas.addEventListener("mousemove", (e) => {
+        if (square.isDragging) {
+            const mouseX = e.clientX - canvas.getBoundingClientRect().left;
+            const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+
+            square.x = mouseX - square.offsetX;
+            square.y = mouseY - square.offsetY;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawSquare(square.x, square.y, square.size);
+        }
+    });
+
+    canvas.addEventListener("mouseup", () => {
+        square.isDragging = false;
+    });
+
+    function animate() {
+        requestAnimationFrame(animate);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawSquare(square.x, square.y, square.size);
+    }
+
+    animate();
+</script>
+
+</html>
