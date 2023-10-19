@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Анимация ракеты</title>
+</head>
+
+<body>
+    <canvas id="canvas" width="800px" height="600px" style="border: 2px solid red;"></canvas>
+</body>
+<script>
+	const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    let rocketY = canvas.height;
+    let rocketX = canvas.width / 2;
+    let rocketSpeed = 2;
+    let amplitude = 100;
+    let angle = 0;
+
+    function draw_triangle(x, k_x, y, rocketY) {
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / k_x, rocketY);
+        ctx.lineTo(canvas.width / k_x + x, rocketY + y);
+        ctx.lineTo(canvas.width / k_x - x, rocketY + y);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function draw_rectangle(x_0, x_1, x_2, x_3, k_x, y_0, y_1, y_2, y_3, rocketY) {
+        ctx.beginPath();
+        ctx.lineTo(canvas.width / k_x + x_0, rocketY + y_0);
+        ctx.lineTo(canvas.width / k_x + x_1, rocketY + y_1);
+        ctx.lineTo(canvas.width / k_x - x_2, rocketY + y_2);
+        ctx.lineTo(canvas.width / k_x - x_3, rocketY + y_3);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function drawRocket(x, y) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "red";
+
+        // Фигура ракеты
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x - 25, y + 50);
+        ctx.lineTo(x + 25, y + 50);
+        ctx.closePath();
+        ctx.fill();
+
+        // Верхушка (последняя ступень)
+        draw_triangle(x, 2, 10, y);
+
+        // Третья ступень
+        // draw_rectangle(15, 20, 20, 15, 2, 40, 120, 120, 40, 150);
+
+        // Вторая ступень
+        // draw_rectangle(20, 20, 20, 20, 2, 40, 150, 150, 40, 230);
+
+        // Первая ступень
+        // draw_rectangle(30, 40, 40, 30, 2, 40, 150, 150, 40, 340);
+
+        // Разделители ступеней
+        // ctx.fillStyle = "blue";
+        // ctx.fillRect(x - 25, y + 50, 50, 10);
+    }
+
+    function animateRocket() {
+        rocketX = canvas.width / 2 + amplitude * Math.sin(angle);
+        rocketY -= rocketSpeed;
+
+        drawRocket(rocketX, rocketY);
+
+        angle += 0.02;
+
+        if (rocketY > 0) {
+            requestAnimationFrame(animateRocket);
+        }
+    }
+
+    animateRocket();
+</script>
+
+</html>
