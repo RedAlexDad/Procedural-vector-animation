@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>HTML5</title>
+	<style>
+		article,
+		aside,
+		details,
+		figcaption,
+		figure,
+		footer,
+		header,
+		hgroup,
+		menu,
+		nav,
+		section {
+			display: block;
+		}
+	</style>
+</head>
+
+<body>
+	<canvas id="canvas" width="800" height="600" style="border: 2px solid red;"></canvas>
+</body>
+<script>
+	const canvas = document.getElementById("canvas");
+	const ctx = canvas.getContext("2d");
+
+	const shapes = [
+		{ type: "square", x: 100, y: 100, size: 50, isDragging: false, offsetX: 0, offsetY: 0 },
+		{ type: "circle", x: 300, y: 100, radius: 25, isDragging: false, offsetX: 0, offsetY: 0 }
+	];
+
+	function drawShape(shape) {
+		ctx.fillStyle = "blue";
+		if (shape.type === "square") {
+			ctx.fillRect(shape.x - shape.size / 2, shape.y - shape.size / 2, shape.size, shape.size);
+		} else if (shape.type === "circle") {
+			ctx.beginPath();
+			ctx.arc(shape.x, shape.y, shape.radius, 0, 2 * Math.PI);
+			ctx.fill();
+			ctx.closePath();
+		}
+	}
+
+	canvas.addEventListener("mousedown", (e) => {
+		const mouseX = e.clientX - canvas.getBoundingClientRect().left;
+		const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+
+		shapes.forEach((shape) => {
+			if (shape.type === "square" &&
+				mouseX >= shape.x - shape.size / 2 &&
+				mouseX <= shape.x + shape.size / 2 &&
+				mouseY >= shape.y - shape.size / 2 &&
+				mouseY <= shape.y + shape.size / 2
+			) {
+				shape.isDragging = true;
+				shape.offsetX = mouseX - shape.x;
+				shape.offsetY = mouseY - shape.y;
+			} else if (shape.type === "circle" &&
+				Math.sqrt((mouseX - shape.x) ** 2 + (mouseY - shape.y) ** 2) <= shape.radius
+			) {
+				shape.isDragging = true;
+				shape.offsetX = mouseX - shape.x;
+				shape.offsetY = mouseY - shape.y;
+			}
+		});
+	});
+
+	canvas.addEventListener("mousemove", (e) => {
+		shapes.forEach((shape) => {
+			if (shape.isDragging) {
+				const mouseX = e.clientX - canvas.getBoundingClientRect().left;
+				const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+				shape.x = mouseX - shape.offsetX;
+				shape.y = mouseY - shape.offsetY;
+			}
+		});
+
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		shapes.forEach((shape) => {
+			drawShape(shape);
+		});
+	});
+
+	canvas.addEventListener("mouseup", () => {
+		shapes.forEach((shape) => {
+			shape.isDragging = false;
+		});
+	});
+
+	function animate() {
+		requestAnimationFrame(animate);
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		shapes.forEach((shape) => {
+			drawShape(shape);
+		});
+	}
+
+	animate();
+</script>
+
+</html>

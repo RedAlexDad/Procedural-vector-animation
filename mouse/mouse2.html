@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>HTML5</title>
+	<style>
+		article,
+		aside,
+		details,
+		figcaption,
+		figure,
+		footer,
+		header,
+		hgroup,
+		menu,
+		nav,
+		section {
+			display: block;
+		}
+	</style>
+</head>
+
+<body>
+	<canvas id="canvas" width="800" height="600" style="border: 2px solid red;"></canvas>
+</body>
+<script>
+	// Получаем элемент canvas и его контекст рисования
+	const canvas = document.getElementById("canvas");
+	const ctx = canvas.getContext("2d");
+
+	// Определяем массив объектов квадратов
+	const squares = [
+		{ x: 100, y: 100, size: 50, isDragging: false, offsetX: 0, offsetY: 0 },
+		{ x: 300, y: 100, size: 50, isDragging: false, offsetX: 0, offsetY: 0 },
+		{ x: 500, y: 100, size: 50, isDragging: false, offsetX: 0, offsetY: 0 }
+	];
+
+	// Функция для рисования квадрата
+	function drawSquare(x, y, size) {
+		ctx.fillStyle = "blue";
+		ctx.fillRect(x - size / 2, y - size / 2, size, size);
+	}
+
+	// Обработчик события "mousedown" (нажатие кнопки мыши)
+	canvas.addEventListener("mousedown", (e) => {
+		const mouseX = e.clientX - canvas.getBoundingClientRect().left;
+		const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+
+		// Проверяем, находится ли курсор мыши в пределах какого-либо квадрата и начинаем перемещение
+		squares.forEach((square) => {
+			if (
+				mouseX >= square.x - square.size / 2 &&
+				mouseX <= square.x + square.size / 2 &&
+				mouseY >= square.y - square.size / 2 &&
+				mouseY <= square.y + square.size / 2
+			) {
+				square.isDragging = true;
+				square.offsetX = mouseX - square.x;
+				square.offsetY = mouseY - square.y;
+			}
+		});
+	});
+
+	// Обработчик события "mousemove" (перемещение мыши)
+	canvas.addEventListener("mousemove", (e) => {
+		squares.forEach((square) => {
+			if (square.isDragging) {
+				const mouseX = e.clientX - canvas.getBoundingClientRect().left;
+				const mouseY = e.clientY - canvas.getBoundingClientRect().top;
+
+				// Обновляем позицию квадрата на основе перемещения мыши
+				square.x = mouseX - square.offsetX;
+				square.y = mouseY - square.offsetY;
+			}
+		});
+
+		// Очищаем холст и перерисовываем все квадраты
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		squares.forEach((square) => {
+			drawSquare(square.x, square.y, square.size);
+		});
+	});
+
+	// Обработчик события "mouseup" (отпускание кнопки мыши)
+	canvas.addEventListener("mouseup", () => {
+		// Останавливаем перемещение для всех квадратов
+		squares.forEach((square) => {
+			square.isDragging = false;
+		});
+	});
+
+	// Функция для анимации холста
+	function animate() {
+		requestAnimationFrame(animate);
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+		// Перерисовываем все квадраты
+		squares.forEach((square) => {
+			drawSquare(square.x, square.y, square.size);
+		});
+	}
+
+	// Запускаем цикл анимации
+	animate();
+</script>
+
+</html>
