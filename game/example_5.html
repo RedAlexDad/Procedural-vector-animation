@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>HTML5</title>
+    <!--[if IE]>
+   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+    <style>
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        hgroup,
+        menu,
+        nav,
+        section {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="800px" height="600px" style="border: 2px solid red;"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // Загрузка изображения заднего фона
+    const background = new Image();
+    // Функция для отрисовки заднего фона
+    background.onload = function () {
+        animateStackySpaceCraft();
+    };
+    background.src = 'background.png';
+
+    function drawBackground() {
+        ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    }
+
+    // Загрузка изображения космического корабля
+    const spaceship = new Image();
+    spaceship.src = 'VisiriShip11Exterior.png';
+    // Ширина корабля
+    spaceship.width = 90;
+    // Высота корабля
+    spaceship.height = 30;
+
+    // Функция для рисования астероида
+    function drawAsteroid(x, y, size) {
+        ctx.beginPath();
+        ctx.moveTo(x, y - size);
+        ctx.lineTo(x + size, y);
+        ctx.lineTo(x, y + size);
+        ctx.lineTo(x - size, y);
+        ctx.closePath();
+        // Цвет астероида
+        ctx.fillStyle = "gray";
+        ctx.fill();
+    }
+
+    function animateStackySpaceCraft() {
+        // Начальная позиция корабля по вертикали
+        let SpaceCraftY = canvas.height / 2;
+        // Высота корабля
+        const SpaceCraftHeight = spaceship.height;
+
+        // Массив для хранения препятствий
+        let asteroids = [];
+
+        function drawSpaceCraft(y) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+            // Отрисовка космического корабля
+            ctx.drawImage(spaceship, canvas.width / 4 - spaceship.width / 2, y - SpaceCraftHeight / 2, spaceship.width,
+                SpaceCraftHeight);
+        }
+
+        // Отрисовка астероида
+        function drawAsteroids() {
+            for (let asteroid of asteroids) {
+                drawAsteroid(asteroid.x, asteroid.y, asteroid.size);
+            }
+        }
+
+        function updateSpaceCraft(event) {
+            // Обновление позиции корабля по вертикали
+            SpaceCraftY = event.clientY - canvas.getBoundingClientRect().top;
+        }
+
+
+        function updateAsteroids() {
+            for (let asteroid of asteroids) {
+                // Скорость движения астероида влево
+                asteroid.x -= 5;
+            }
+
+            if (Math.random() < 0.02) {
+                let asteroidSize = Math.random() * 20 + 10;
+                let gapHeight = 150;
+                asteroids.push({
+                    x: canvas.width,
+                    y: Math.random() * (canvas.height - gapHeight),
+                    size: asteroidSize
+                });
+            }
+
+            asteroids = asteroids.filter(asteroid => asteroid.x + asteroid.size >
+                0); // Удаление астероидов, вышедших за пределы холста
+        }
+
+        function checkCollision() {
+            for (let asteroid of asteroids) {
+                if (
+                    SpaceCraftY - SpaceCraftHeight / 2 < asteroid.y + asteroid.size &&
+                    SpaceCraftY + SpaceCraftHeight / 2 > asteroid.y &&
+                    canvas.width / 4 + spaceship.width / 2 > asteroid.x &&
+                    canvas.width / 4 - spaceship.width / 2 < asteroid.x + asteroid.size
+                ) {
+                    // Проверка столкновения корабля с астероидом
+                    resetGame();
+                }
+            }
+        }
+
+        function resetGame() {
+            SpaceCraftY = canvas.height / 2;
+            asteroids = [];
+        }
+
+
+        function animate() {
+            // Обновление препятствий
+            updateAsteroids();
+            // Столкновление
+            checkCollision();
+
+            // Отрисовка заднего фона
+            drawBackground();
+
+            // Отрисовка корабля
+            drawSpaceCraft(SpaceCraftY);
+            // Отрисовка астероидов
+            drawAsteroids();
+        }
+
+        // Обработчик движения мыши
+        canvas.addEventListener("mousemove", updateSpaceCraft);
+
+        // Запуск анимации с интервалом 16 миллисекунд
+        setInterval(animate, 16);
+    }
+</script>
+
+</html>

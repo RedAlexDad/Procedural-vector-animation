@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8" />
+  <title>HTML5</title>
+  <!--[if IE]>
+   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <style>
+   article, aside, details, figcaption, figure, footer,header,
+   hgroup, menu, nav, section { display: block; }
+  </style>
+ </head>
+ <body>
+  <canvas id="canvas" width="800px" height="600px" style="border: 2px solid red;"></canvas>
+ </body>
+ <script>
+    // Получаем элемент canvas и его контекст
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    // Создадим функцию для похожей анимации игры Stacky Bird
+    function animateStackyBird() {
+        // Инициализация начальной позиции птицы по вертикали
+        let birdY = canvas.height / 2;
+
+        // Высота птицы
+        const birdHeight = 20;
+
+        // Флаг, указывающий, нажата ли кнопка мыши
+        let isMousePressed = false;
+
+        // Массив для хранения препятствий
+        let obstacles = [];
+
+        // Функция для отрисовки птицы
+        function drawBird(y) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "yellow";
+            ctx.fillRect(canvas.width / 4, y - birdHeight / 2, 20, birdHeight);
+        }
+
+        // Функция для отрисовки препятствий
+        function drawObstacles() {
+            ctx.fillStyle = "green";
+            for (let obstacle of obstacles) {
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            }
+        }
+
+        // Функция для обновления позиции птицы по вертикали
+        function updateBird(event) {
+            birdY = event.clientY - canvas.getBoundingClientRect().top;
+        }
+
+        // Функция для обновления позиции и удаления препятствий
+        function updateObstacles() {
+            for (let obstacle of obstacles) {
+                obstacle.x -= 5;
+            }
+
+            if (Math.random() < 0.02) {
+                let obstacleHeight = Math.random() * 100 + 50;
+                let gapHeight = 150;
+                obstacles.push({
+                    x: canvas.width,
+                    y: 0,
+                    width: 20,
+                    height: obstacleHeight
+                });
+                obstacles.push({
+                    x: canvas.width,
+                    y: obstacleHeight + gapHeight,
+                    width: 20,
+                    height: canvas.height - obstacleHeight - gapHeight
+                });
+            }
+
+            obstacles = obstacles.filter(obstacle => obstacle.x + obstacle.width > 0);
+        }
+
+        // Функция для проверки столкновения с препятствиями
+        function checkCollision() {
+            for (let obstacle of obstacles) {
+                if (
+                    birdY - birdHeight / 2 < obstacle.y + obstacle.height &&
+                    birdY + birdHeight / 2 > obstacle.y &&
+                    canvas.width / 4 + 20 > obstacle.x &&
+                    canvas.width / 4 < obstacle.x + obstacle.width
+                ) {
+                    resetGame();
+                }
+            }
+        }
+
+        // Функция для сброса игры при столкновении
+        function resetGame() {
+            birdY = canvas.height / 2;
+            obstacles = [];
+        }
+
+        // Функция для анимации игры
+        function animate() {
+            updateObstacles();
+            checkCollision();
+            drawBird(birdY);
+            drawObstacles();
+        }
+
+        // Обработчик движения мыши
+        canvas.addEventListener("mousemove", updateBird);
+
+        // Запуск анимации с интервалом 16 миллисекунд
+        setInterval(animate, 16);
+    }
+
+    // Запуск функции анимации
+    animateStackyBird();
+</script>
+
+
+</html>

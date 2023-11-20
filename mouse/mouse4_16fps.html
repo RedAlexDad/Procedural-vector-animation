@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>HTML5</title>
+	<style>
+		article,
+		aside,
+		details,
+		figcaption,
+		figure,
+		footer,
+		header,
+		hgroup,
+		menu,
+		nav,
+		section {
+			display: block;
+		}
+	</style>
+</head>
+
+<body>
+	<canvas id="canvas" width="800" height="600" style="border: 2px solid red;"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    function animateRocketFollowingMouse() {
+        let rocketX = canvas.width / 2;
+        let rocketY = canvas.height / 2;
+        const rocketSpeed = 2;
+        let isDragging = false;
+
+        function drawRocket(x, y) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "red";
+
+            // Фигура ракеты
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - 25, y + 50);
+            ctx.lineTo(x + 25, y + 50);
+            ctx.closePath();
+            ctx.fill();
+
+            // Разделители ступеней
+            ctx.fillStyle = "blue";
+            ctx.fillRect(x - 25, y + 50, 50, 10);
+        }
+
+        function updateRocketPosition(event) {
+            if (isDragging) {
+                rocketX = event.clientX - canvas.getBoundingClientRect().left;
+                rocketY = event.clientY - canvas.getBoundingClientRect().top - event.clientY / 10;
+            }
+        }
+
+        canvas.addEventListener("mousemove", updateRocketPosition);
+
+        canvas.addEventListener("mousedown", function () {
+            isDragging = true;
+        });
+
+        canvas.addEventListener("mouseup", function () {
+            isDragging = false;
+        });
+
+        function animateRocket() {
+            drawRocket(rocketX, rocketY);
+        }
+
+        setInterval(animateRocket, 16);
+    }
+
+    animateRocketFollowingMouse();
+</script>
+
+
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8" />
+  <title>HTML5</title>
+  <!--[if IE]>
+   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <style>
+   article, aside, details, figcaption, figure, footer,header,
+   hgroup, menu, nav, section { display: block; }
+  </style>
+ </head>
+ <body>
+  <canvas id="canvas" width="800px" height="600px" style="border: 2px solid red;"></canvas>
+ </body>
+ <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    function animateDinosaur() {
+        let dinoX = 50;
+        let dinoY = canvas.height - 70;
+        let dinoJumping = false;
+        let dinoJumpHeight = 0;
+        const dinoJumpSpeed = 5;
+
+        let obstacleX = canvas.width;
+        const obstacleWidth = 20;
+        const obstacleSpeed = 5;
+
+        function drawDinosaur(x, y) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "green";
+            // Простой прямоугольник вместо динозавра
+            ctx.fillRect(x, y - dinoJumpHeight, 30, 30); 
+
+            // Добавим землю
+            ctx.fillStyle = "brown";
+            ctx.fillRect(0, canvas.height - 10, canvas.width, 10);
+        }
+
+        function drawObstacle(x) {
+            ctx.fillStyle = "gray";
+            ctx.fillRect(x, canvas.height - 30, obstacleWidth, 30);
+        }
+
+        function updateDinosaur() {
+            if (dinoJumping) {
+                dinoJumpHeight += dinoJumpSpeed;
+                if (dinoJumpHeight >= 50) {
+                    dinoJumping = false;
+                }
+            } else if (dinoJumpHeight > 0) {
+                dinoJumpHeight -= dinoJumpSpeed;
+            }
+        }
+
+        function updateObstacle() {
+            obstacleX -= obstacleSpeed;
+            if (obstacleX + obstacleWidth < 0) {
+                obstacleX = canvas.width;
+            }
+        }
+
+        // Коллизия, действия при столкновении
+        function checkCollision() {
+            const dinoBottom = dinoY - dinoJumpHeight + 30;
+            const obstacleBottom = canvas.height - 30;
+
+            if (dinoX + 30 > obstacleX && dinoX < obstacleX + obstacleWidth && dinoBottom > obstacleBottom) {
+                // Перемещаем препятствие за экран
+                obstacleX = canvas.width; 
+            }
+        }
+
+        function animate() {
+            updateDinosaur();
+            updateObstacle();
+            checkCollision();
+            drawDinosaur(dinoX, dinoY);
+            drawObstacle(obstacleX);
+        }
+
+        canvas.addEventListener("keydown", function (event) {
+            if (event.code === "Space" && !dinoJumping) {
+                dinoJumping = true;
+            }
+        });
+
+        setInterval(animate, 16);
+    }
+
+    animateDinosaur();
+</script>
+
+</html>
