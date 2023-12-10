@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>HTML5</title>
+    <!--[if IE]>
+   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+    <style>
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        hgroup,
+        menu,
+        nav,
+        section {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="800px" height="600px" style="border: 2px solid red;"></canvas>
+</body>
+<script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const SPEED = 0.2;
+
+    const background = new Image();
+    background.onload = function () {
+        animateStackySpaceCraft();
+    };
+    background.onerror = function () {
+        console.error('Ошибка загрузки изображения');
+    };
+    background.src = 'background.png';
+
+    function drawBackground() {
+        ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+    }
+
+    function drawSpaceCraft(x, y, tiltAngle) {
+        // ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+        ctx.translate(x + 30, y);
+        ctx.rotate((Math.PI / 180) * tiltAngle);
+
+        // Кабина (носовая часть)
+        ctx.fillStyle = "blue";
+        ctx.beginPath();
+        ctx.moveTo(30, 0);
+        ctx.lineTo(0, -7);
+        ctx.lineTo(0, 7);
+        ctx.closePath();
+        ctx.fill();
+
+        // Основная часть с крыльями
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.moveTo(-20, -10);
+        ctx.lineTo(-20, 10);
+        ctx.lineTo(-30, 20);
+        ctx.lineTo(-10, 10);
+        ctx.lineTo(-10, -10);
+        ctx.lineTo(-30, -20);
+        ctx.closePath();
+        ctx.fill();
+
+        // Хвостовая часть с реактивными двигателями
+        ctx.fillStyle = "gray";
+        ctx.beginPath();
+        ctx.moveTo(-15, -13);
+        ctx.lineTo(10, -5);
+        ctx.lineTo(10, 5);
+        ctx.lineTo(-15, 13);
+        ctx.closePath();
+        ctx.fill();
+
+        // Струи реактивные двигатели
+        for (let i = -1; i <= 1; i += 2) {
+            ctx.fillStyle = "orange";
+            ctx.beginPath();
+            ctx.arc(-30, 10 * i, 5, 0, Math.PI * 2);
+            ctx.arc(-45, 15 * i, 5, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
+
+    function drawAsteroid(x, y, size) {
+        ctx.beginPath();
+        ctx.moveTo(x, y - size);
+        ctx.lineTo(x + size, y);
+        ctx.lineTo(x, y + size);
+        ctx.lineTo(x - size, y);
+        ctx.closePath();
+        ctx.fillStyle = "gray";
+        ctx.fill();
+    }
+
+    function animateStackySpaceCraft() {
+        const spaceCraft = {
+            x: canvas.width / 4,
+            y: canvas.height / 2,
+            cursorY: canvas.height / 2,
+            height: 30,
+            speed: 0.5
+        };
+
+        let asteroids = [];
+        let lastTimestamp = 0;
+
+        function drawAsteroids() {
+            for (let asteroid of asteroids) {
+                drawAsteroid(asteroid.x, asteroid.y, asteroid.size);
+            }
+        }
+
+        function updateSpaceCraft(event) {
+            spaceCraft.cursorY = event.clientY - canvas.getBoundingClientRect().top;
+        }
+
+
+        function updateAsteroids(timestamp) {
+            const deltaTime = timestamp - lastTimestamp;
+            lastTimestamp = timestamp;
+
+            for (let asteroid of asteroids) {
+                asteroid.x -= SPEED * deltaTime;
+            }
+
+            if (Math.random() < 0.02) {
+                let asteroidSize = Math.random() * 20 + 10;
+                let gapHeight = 150;
+                asteroids.push({
+                    x: canvas.width,
+                    y: Math.random() * (canvas.height - gapHeight),
+                    size: asteroidSize
+                });
+            }
+
+            asteroids = asteroids.filter(asteroid => asteroid.x + asteroid.size > 0);
+        }
+
+        function checkCollision() {
+            for (let asteroid of asteroids) {
+                if (
+                    spaceCraft.y - spaceCraft.height / 2 < asteroid.y + asteroid.size &&
+                    spaceCraft.y + spaceCraft.height / 2 > asteroid.y &&
+                    spaceCraft.x + 30 > asteroid.x &&
+                    spaceCraft.x < asteroid.x + asteroid.size
+                ) {
+                    resetGame();
+                }
+            }
+        }
+
+        function resetGame() {
+            spaceCraft.y = canvas.height / 2;
+            asteroids = [];
+        }
+
+        function animate(timestamp) {
+            updateAsteroids(timestamp);
+            checkCollision();
+            drawBackground();
+
+            const direction = Math.sign(spaceCraft.cursorY - spaceCraft.y);
+            spaceCraft.y += direction * spaceCraft.speed;
+
+            const tiltAngle = (spaceCraft.cursorY - spaceCraft.y) / canvas.height * 30;
+            drawSpaceCraft(spaceCraft.x, spaceCraft.y, tiltAngle);
+            drawAsteroids();
+
+            requestAnimationFrame(animate);
+        }
+
+        canvas.addEventListener("mousemove", updateSpaceCraft);
+        requestAnimationFrame(animate);
+    }
+</script>
+
+</html>
